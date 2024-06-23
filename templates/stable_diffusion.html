@@ -3,36 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stable Diffusion</title>
+    <title>Stable Diffusion Image Generation</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Stable Diffusion</h1>
-    <form id="generate-form">
-        <label for="prompt">Prompt for Stable Diffusion:</label>
-        <input type="text" id="prompt" name="prompt">
+    <h1>Stable Diffusion Image Generation</h1>
+    <form id="stable-diffusion-form">
+        <label for="prompt">Prompt:</label>
+        <input type="text" id="prompt" name="prompt" required>
         <button type="submit">Generate Image</button>
     </form>
-    <div id="generated-image"></div>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <div id="result">
+        <h2>Generated Image:</h2>
+        <img id="generated-image" src="" alt="Generated Image">
+    </div>
     <script>
-        $(document).ready(function() {
-            $('#generate-form').on('submit', function(event) {
-                event.preventDefault();
-                var prompt = $('#prompt').val();
-                $.ajax({
-                    url: '/generate',
-                    method: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({prompt: prompt}),
-                    success: function(response) {
-                        $('#generated-image').html('<img src="' + response.image_url + '" alt="Generated Image"/>');
-                    },
-                    error: function(xhr, status, error) {
-                        $('#generated-image').text('Error: ' + xhr.responseText);
-                    }
-                });
-            });
+        document.getElementById('stable-diffusion-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const prompt = document.getElementById('prompt').value;
+            fetch('/generate-stable-diffusion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt: prompt })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    document.getElementById('generated-image').src = data.image_url;
+                }
+            })
+            .catch(error => console.error('Error:', error));
         });
     </script>
 </body>

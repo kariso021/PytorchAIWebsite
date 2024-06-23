@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CycleGAN Image Translation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>CycleGAN Image Translation</h1>
+    <form id="cyclegan-form" enctype="multipart/form-data">
+        <input type="file" id="file" name="file" accept="image/*" required>
+        <button type="submit">Translate Image</button>
+    </form>
+    <div id="translated-image"></div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#cyclegan-form').on('submit', function(event) {
+                event.preventDefault();
+                var formData = new FormData();
+                formData.append('file', $('#file')[0].files[0]);
+                $.ajax({
+                    url: '/generate-cyclegan',
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        $('#translated-image').html('<img src="' + response.image_url + '" alt="Translated Image"/>');
+                    },
+                    error: function(xhr, status, error) {
+                        $('#translated-image').text('Error: ' + xhr.responseText);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
