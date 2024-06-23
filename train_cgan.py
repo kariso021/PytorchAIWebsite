@@ -9,9 +9,12 @@ def train_cgan(generator_path):
     # Hyperparameters
     batch_size = 64
     learning_rate = 0.0002
-    num_epochs = 50
+    num_epochs = 5000
     latent_size = 100
     num_classes = 10
+
+    # Device configuration
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # Data loading and preprocessing
     transform = transforms.Compose([
@@ -23,8 +26,8 @@ def train_cgan(generator_path):
     data_loader = DataLoader(dataset=mnist, batch_size=batch_size, shuffle=True)
 
     # Initialize models
-    generator = Generator()
-    discriminator = Discriminator()
+    generator = Generator().to(device)
+    discriminator = Discriminator().to(device)
 
     # Loss and optimizer
     criterion = nn.BCELoss()
@@ -35,17 +38,19 @@ def train_cgan(generator_path):
     for epoch in range(num_epochs):
         for i, (images, labels) in enumerate(data_loader):
             batch_size = images.size(0)
+            images = images.to(device)
+            labels = labels.to(device)
 
             # Create labels for real and fake data
-            real_labels = torch.ones(batch_size, 1)
-            fake_labels = torch.zeros(batch_size, 1)
+            real_labels = torch.ones(batch_size, 1).to(device)
+            fake_labels = torch.zeros(batch_size, 1).to(device)
 
             # Train Discriminator
             outputs = discriminator(images, labels)
             d_loss_real = criterion(outputs, real_labels)
             real_score = outputs
 
-            noise = torch.randn(batch_size, latent_size)
+            noise = torch.randn(batch_size, latent_size).to(device)
             fake_images = generator(noise, labels)
             outputs = discriminator(fake_images, labels)
             d_loss_fake = criterion(outputs, fake_labels)
@@ -57,7 +62,7 @@ def train_cgan(generator_path):
             d_optimizer.step()
 
             # Train Generator
-            noise = torch.randn(batch_size, latent_size)
+            noise = torch.randn(batch_size, latent_size).to(device)
             fake_images = generator(noise, labels)
             outputs = discriminator(fake_images, labels)
 

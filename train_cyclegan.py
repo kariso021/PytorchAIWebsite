@@ -29,7 +29,7 @@ def train_cyclegan(generator_path_A2B, generator_path_B2A):
     # Hyperparameters
     batch_size = 1
     learning_rate = 0.0002
-    num_epochs = 1  # 에폭 수를 1로 설정하여 빠르게 학습
+    num_epochs = 5000  # Increase the number of epochs for sufficient training
     lambda_cycle = 10.0
     lambda_identity = 0.5 * lambda_cycle
 
@@ -42,7 +42,7 @@ def train_cyclegan(generator_path_A2B, generator_path_B2A):
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
 
-    # 실제 데이터셋 사용
+    # Actual datasets
     dataset_A = ImageDataset(transform=transform, data_dir='./data/trainA')
     dataset_B = ImageDataset(transform=transform, data_dir='./data/trainB')
     loader_A = DataLoader(dataset_A, batch_size=batch_size, shuffle=True)
@@ -132,13 +132,19 @@ def train_cyclegan(generator_path_A2B, generator_path_B2A):
             loss_D_B.backward()
             d_B_optimizer.step()
 
-            if i % 10 == 0:  # 매 10번째 배치마다 로그를 출력
+            if i % 200 == 0:  # 매 200번째 배치마다 로그를 출력
                 print(f"[Epoch {epoch}/{num_epochs}] [Batch {i}/10] [D loss: {loss_D_A.item() + loss_D_B.item()}] [G loss: {loss_G.item()}]")
 
-    # Save the models
+        # Save the models periodically
+        if epoch % 100 == 0:
+            torch.save(G_A2B.state_dict(), f"{generator_path_A2B}_epoch_{epoch}.pth")
+            torch.save(G_B2A.state_dict(), f"{generator_path_B2A}_epoch_{epoch}.pth")
+
+    # Save the final models
     torch.save(G_A2B.state_dict(), generator_path_A2B)
     torch.save(G_B2A.state_dict(), generator_path_B2A)
     print(f'CycleGAN models saved to {generator_path_A2B} and {generator_path_B2A}')
 
 if __name__ == '__main__':
     train_cyclegan('G_A2B.pth', 'G_B2A.pth')
+Key Enhancements:

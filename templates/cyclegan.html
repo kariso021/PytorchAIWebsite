@@ -9,31 +9,37 @@
 <body>
     <h1>CycleGAN Image Translation</h1>
     <form id="cyclegan-form" enctype="multipart/form-data">
-        <input type="file" id="file" name="file" accept="image/*" required>
+        <label for="file">Upload Image:</label>
+        <input type="file" id="file" name="file"><br><br>
+        <label for="direction">Transformation:</label>
+        <select id="direction" name="direction">
+            <option value="A2B">Day to Night</option>
+            <option value="B2A">Night to Day</option>
+        </select><br><br>
         <button type="submit">Translate Image</button>
     </form>
-    <div id="translated-image"></div>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <div id="result">
+        <h2>Translated Image:</h2>
+        <img id="translated-image" src="" alt="Translated Image">
+    </div>
     <script>
-        $(document).ready(function() {
-            $('#cyclegan-form').on('submit', function(event) {
-                event.preventDefault();
-                var formData = new FormData();
-                formData.append('file', $('#file')[0].files[0]);
-                $.ajax({
-                    url: '/generate-cyclegan',
-                    method: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        $('#translated-image').html('<img src="' + response.image_url + '" alt="Translated Image"/>');
-                    },
-                    error: function(xhr, status, error) {
-                        $('#translated-image').text('Error: ' + xhr.responseText);
-                    }
-                });
-            });
+        document.getElementById('cyclegan-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData();
+            const fileField = document.getElementById('file');
+            const directionField = document.getElementById('direction');
+            formData.append('file', fileField.files[0]);
+            formData.append('direction', directionField.value);
+
+            fetch('/generate-cyclegan', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('translated-image').src = data.image_url;
+            })
+            .catch(error => console.error('Error:', error));
         });
     </script>
 </body>

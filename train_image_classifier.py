@@ -33,7 +33,7 @@ trainloader = torch.utils.data.DataLoader(trainset, batch_size=100, shuffle=True
 testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
 testloader = torch.utils.data.DataLoader(testset, batch_size=100, shuffle=False, num_workers=2)
 
-classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+classes = ('dog','deer')
 
 # 모델, 손실 함수 및 옵티마이저 정의
 net = SimpleCNN()
@@ -41,7 +41,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
 # 모델 학습
-for epoch in range(10):  # 10 에포크 동안 학습
+for epoch in range(1000):  # 10 에포크 동안 학습
     running_loss = 0.0
     for i, data in enumerate(trainloader, 0):
         inputs, labels = data
