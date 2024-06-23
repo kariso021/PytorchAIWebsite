@@ -8,8 +8,8 @@ from model_cgan import Generator, Discriminator
 def train_cgan(generator_path):
     # Hyperparameters
     batch_size = 64
-    learning_rate = 0.0002
-    num_epochs = 5000
+    learning_rate = 0.05
+    num_epochs = 200
     latent_size = 100
     num_classes = 10
 

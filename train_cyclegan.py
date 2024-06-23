@@ -10,7 +10,7 @@ import numpy as np
 import os
 
 class ImageDataset(Dataset):
-    def __init__(self, transform=None, data_dir='./data/trainA'):
+    def __init__(self, transform=None, data_dir='./datasets/summer2winter_yosemite/trainA'):
         self.transform = transform
         self.data_dir = data_dir
         self.data = [os.path.join(data_dir, img) for img in os.listdir(data_dir) if img.endswith('.jpg')]
@@ -43,8 +43,8 @@ def train_cyclegan(generator_path_A2B, generator_path_B2A):
     ])
 
     # Actual datasets
-    dataset_A = ImageDataset(transform=transform, data_dir='./data/trainA')
-    dataset_B = ImageDataset(transform=transform, data_dir='./data/trainB')
+    dataset_A = ImageDataset(transform=transform, data_dir='./datasets/summer2winter_yosemite/trainA')
+    dataset_B = ImageDataset(transform=transform, data_dir='./datasets/summer2winter_yosemite/trainB')
     loader_A = DataLoader(dataset_A, batch_size=batch_size, shuffle=True)
     loader_B = DataLoader(dataset_B, batch_size=batch_size, shuffle=True)
 
@@ -55,33 +55,29 @@ def train_cyclegan(generator_path_A2B, generator_path_B2A):
     D_B = Discriminator(input_nc=3).to(device)
 
     # Losses
-    adversarial_loss = nn.MSELoss().to(device)
-    cycle_loss = nn.L1Loss().to(device)
-    identity_loss = nn.L1Loss().to(device)
+    adversarial_loss = nn.MSELoss()
+    cycle_loss = nn.L1Loss()
+    identity_loss = nn.L1Loss()
 
     # Optimizers
-    g_optimizer = optim.Adam(list(G_A2B.parameters()) + list(G_B2A.parameters()), lr=learning_rate, betas=(0.5, 0.999))
+    g_optimizer = optim.Adam(
+        list(G_A2B.parameters()) + list(G_B2A.parameters()), lr=learning_rate, betas=(0.5, 0.999)
+    )
     d_A_optimizer = optim.Adam(D_A.parameters(), lr=learning_rate, betas=(0.5, 0.999))
     d_B_optimizer = optim.Adam(D_B.parameters(), lr=learning_rate, betas=(0.5, 0.999))
 
-    # Training
     for epoch in range(num_epochs):
-        for i, (real_A, real_B) in enumerate(zip(cycle(loader_A), cycle(loader_B))):
+        for i, (real_A, real_B) in enumerate(zip(cycle(loader_A), loader_B)):
             real_A = real_A.to(device)
             real_B = real_B.to(device)
-            
-            batch_size = real_A.size(0)
 
             # Adversarial ground truths
-            valid = torch.ones(batch_size, *D_A.output_shape).to(device)
-            fake = torch.zeros(batch_size, *D_A.output_shape).to(device)
+            valid = torch.ones((real_A.size(0), *D_A.output_shape), requires_grad=False).to(device)
+            fake = torch.zeros((real_A.size(0), *D_A.output_shape), requires_grad=False).to(device)
 
-            # ------------------
+            # -----------------------
             #  Train Generators
-            # ------------------
-
-            G_A2B.train()
-            G_B2A.train()
+            # -----------------------
 
             # Identity loss
             loss_id_A = identity_loss(G_B2A(real_A), real_A)
@@ -132,8 +128,8 @@ def train_cyclegan(generator_path_A2B, generator_path_B2A):
             loss_D_B.backward()
             d_B_optimizer.step()
 
-            if i % 200 == 0:  # 매 200번째 배치마다 로그를 출력
-                print(f"[Epoch {epoch}/{num_epochs}] [Batch {i}/10] [D loss: {loss_D_A.item() + loss_D_B.item()}] [G loss: {loss_G.item()}]")
+            if i % 200 == 0:  # Log every 200 batches
+                print(f"[Epoch {epoch}/{num_epochs}] [Batch {i}] [D loss: {loss_D_A.item() + loss_D_B.item()}] [G loss: {loss_G.item()}]")
 
         # Save the models periodically
         if epoch % 100 == 0:
@@ -147,4 +143,3 @@ def train_cyclegan(generator_path_A2B, generator_path_B2A):
 
 if __name__ == '__main__':
     train_cyclegan('G_A2B.pth', 'G_B2A.pth')
-Key Enhancements:

@@ -13,8 +13,8 @@
         <input type="file" id="file" name="file"><br><br>
         <label for="direction">Transformation:</label>
         <select id="direction" name="direction">
-            <option value="A2B">Day to Night</option>
-            <option value="B2A">Night to Day</option>
+            <option value="A2B">Summer to Winter</option>
+            <option value="B2A">Winter to Summer</option>
         </select><br><br>
         <button type="submit">Translate Image</button>
     </form>
@@ -37,7 +37,11 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('translated-image').src = data.image_url;
+                if (data.image_url) {
+                    document.getElementById('translated-image').src = data.image_url;
+                } else {
+                    console.error('Image URL not found in the response:', data);
+                }
             })
             .catch(error => console.error('Error:', error));
         });

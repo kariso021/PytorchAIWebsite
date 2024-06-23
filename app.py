@@ -20,6 +20,8 @@ UPLOAD_FOLDER = 'uploads'
 # 업로드 폴더가 없으면 생성
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
+if not os.path.exists('static'):
+    os.makedirs('static')
 
 # CNN 모델 로드
 cnn_model = load_model(CNN_MODEL_PATH, SimpleCNN)
@@ -125,24 +127,36 @@ def generate_cyclegan():
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
 
-    if file:
+    try:
         file_path = os.path.join(UPLOAD_FOLDER, file.filename)
         file.save(file_path)
+        print(f"File saved at: {file_path}")
 
-        # CycleGAN 모델로 이미지 변환
-        direction = request.form.get('direction', 'A2B')  # 변환 방향 선택
+        direction = request.form.get('direction', 'A2B')
+        print(f"Direction: {direction}")
         if direction == 'A2B':
-            image = translate_image(cyclegan_model_A2B, file_path)
+            model = cyclegan_model_A2B
         else:
-            image = translate_image(cyclegan_model_B2A, file_path)
-        
-        # 이미지를 파일로 저장
-        image_path = os.path.join('static', 'cyclegan_generated_image.png')
-        image.save(image_path)
-        
-        # 이미지 URL 반환
+            model = cyclegan_model_B2A
+
+        image = translate_image(model, file_path)
+        print(f"Output shape: {image.size}")
+
+        # Ensure the static directory exists
+        if not os.path.exists('static'):
+            os.makedirs('static')
+
+        image_output_path = os.path.join('static', 'cyclegan_generated_image.png')
+        image.save(image_output_path)
+        print(f"Translated image saved at: {image_output_path}")
+
         image_url = url_for('static', filename='cyclegan_generated_image.png')
+        print(f"Image URL: {image_url}")
         return jsonify({'image_url': image_url})
+
+    except Exception as e:
+        print(f"이미지 생성 중 오류 발생: {str(e)}")  # 디버깅 출력
+        return jsonify({'error': f'이미지 생성 중 오류 발생: {str(e)}'}), 500
 
 @app.route('/stable-diffusion')
 def stable_diffusion():
