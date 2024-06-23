@@ -3,68 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flask + PyTorch + Stable Diffusion App</title>
+    <title>Main Page</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Flask + PyTorch + Stable Diffusion</h1>
-    <div>
-        <h2>Predict</h2>
-        <form id="prediction-form">
-            <label for="input-data">Input Data (comma-separated, 10 elements):</label>
-            <input type="text" id="input-data" name="input-data">
-            <button type="submit">Predict</button>
-        </form>
-        <div id="prediction-result"></div>
-    </div>
-    <div>
-        <h2>Generate Image</h2>
-        <form id="generation-form">
-            <label for="prompt">Prompt:</label>
-            <input type="text" id="prompt" name="prompt">
-            <button type="submit">Generate</button>
-        </form>
-        <div id="image-result"></div>
-    </div>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            $('#prediction-form').on('submit', function(event) {
-                event.preventDefault();
-                var inputData = $('#input-data').val().split(',').map(Number);
-                if (inputData.length !== 10) {
-                    $('#prediction-result').text('Error: Input data must have 10 elements');
-                    return;
-                }
-                $.ajax({
-                    url: '/predict',
-                    method: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({data: inputData}),
-                    success: function(response) {
-                        $('#prediction-result').text('Prediction: ' + response.prediction);
-                    },
-                    error: function(response) {
-                        $('#prediction-result').text('Error: ' + response.responseJSON.error);
-                    }
-                });
-            });
-
-            $('#generation-form').on('submit', function(event) {
-                event.preventDefault();
-                var prompt = $('#prompt').val();
-                $.ajax({
-                    url: '/generate',
-                    method: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({prompt: prompt}),
-                    success: function(response) {
-                        var img = $('<img>').attr('src', URL.createObjectURL(response));
-                        $('#image-result').html(img);
-                    }
-                });
-            });
-        });
-    </script>
+    <h1>Main Page</h1>
+    <ul>
+        <li><a href="/image-classification">Image Classification</a></li>
+        <li><a href="/stable-diffusion">Stable Diffusion</a></li>
+        <li><a href="/gan">GAN Image Generation</a></li>
+    </ul>
 </body>
 </html>

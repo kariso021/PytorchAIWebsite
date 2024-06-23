@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stable Diffusion</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Stable Diffusion</h1>
+    <form id="generate-form">
+        <label for="prompt">Prompt for Stable Diffusion:</label>
+        <input type="text" id="prompt" name="prompt">
+        <button type="submit">Generate Image</button>
+    </form>
+    <div id="generated-image"></div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#generate-form').on('submit', function(event) {
+                event.preventDefault();
+                var prompt = $('#prompt').val();
+                $.ajax({
+                    url: '/generate',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({prompt: prompt}),
+                    success: function(response) {
+                        $('#generated-image').html('<img src="' + response.image_url + '" alt="Generated Image"/>');
+                    },
+                    error: function(xhr, status, error) {
+                        $('#generated-image').text('Error: ' + xhr.responseText);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
